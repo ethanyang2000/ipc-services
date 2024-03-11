@@ -4,7 +4,7 @@ tiny_client::tiny_client(){
     // open main mq
     auto main_mq = mq_open("/main", O_RDWR, 0666, NULL);
     if (main_mq == (mqd_t)-1) {
-        std::cout<<"client open main mq failed"<<endl;
+        std::cout<<"client open main mq failed"<<std::endl;
         throw std::runtime_error("client open main mq failed!");
     }
 
@@ -12,7 +12,7 @@ tiny_client::tiny_client(){
     struct message msg;
     msg.msg_type = msg_t.INIT_CLIENT;
     if(mq_send(main_mq, (const char *)&msg, sizeof(struct message), 1) < 0){
-        std::cout<<"client send through main mq failed"<<endl;
+        std::cout<<"client send through main mq failed"<<std::endl;
         throw std::runtime_error("client send through main mq failed!");
     }
 
@@ -32,19 +32,19 @@ tiny_client::tiny_client(){
 
     mq = mq_open(mq_name, O_RDWR, 0666, NULL);
     if (mq == (mqd_t)-1) {
-        std::cout<<"client open mq failed"<<endl;
+        std::cout<<"client open mq failed"<<std::endl;
         throw std::runtime_error("client open mq failed!");
     }
 
     fd = shm_open(mem_name, O_RDWR, 0666);
     if(fd < 0){
-        std::cout<<"shared mem "<<id<<" init failed"<<endl;
+        std::cout<<"shared mem "<<id<<" init failed"<<std::endl;
         throw std::runtime_error("client shared mem failed!");
     }
     ftruncate(fd,seg_size);
     mem_ptr = mmap(0,seg_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (mem_ptr == MAP_FAILED) {
-        std::cout<<"mmap "<<id<<" failed"<<endl;
+        std::cout<<"mmap "<<id<<" failed"<<std::endl;
         throw std::runtime_error("mmap failed!");
     }
 
