@@ -1,0 +1,3 @@
+[submodule "snappy-c"]
+	path = snappy-c
+	url = git@github.com:ethanyang2000/snappy-c.git
