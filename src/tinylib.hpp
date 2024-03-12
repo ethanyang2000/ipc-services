@@ -1,6 +1,8 @@
 #include "include.hpp"
+typedef void (*callback_f)(char*);
 
 class tiny_client{
+public:
     int id;
     std::string mq_name;
     std::string mq_sem_name;
@@ -15,7 +17,13 @@ class tiny_client{
     int num_seg;
     int seg_size;
     int mem_id;
+    int chunk_size;
 
     tiny_client();
     ~tiny_client();
-}
+    void Compress(std::string, bool, callback_f);
+    void compress_chunk();
+    void decompress_chunk();
+    void do_compress(std::string);
+    void async_call(std::string, callback_f);
+};

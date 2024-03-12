@@ -8,12 +8,12 @@ extern "C" {
 
 class client_info{
 public:
-    client_info(int client_id){
+    client_info(int client_id, struct mq_attr attr){
         id = client_id;
         sem_name = "/"+std::to_string(id)+"_sem";
         mq_name = "/"+std::to_string(id)+"_mq";
 
-        client_mq = mq_open(mq_name.data(), O_CREAT | O_EXCL | O_RDWR, 0666);
+        client_mq = mq_open(mq_name.data(), O_CREAT | O_EXCL | O_RDWR, 0666, &attr);
         if(client_mq < 0){
             std::cout<<"open client "<< id <<" msg queue fail!"<<std::endl;
             throw std::runtime_error("open client msg queue fail!");
@@ -67,9 +67,10 @@ public:
         sem_name = "/"+std::to_string(id)+"_mem_sem";
         mem_name = "/"+std::to_string(id)+"_mem";
 
-        fd = shm_open(mem_name.data(), O_CREAT | O_EXCL | O_RDWR, 0666);
+        fd = shm_open(mem_name.data(), O_CREAT | O_RDWR, 0666);
         if(fd < 0){
             std::cout<<"shared mem "<<id<<" init failed"<<std::endl;
+            fprintf(stderr, "Error: %s\n", strerror(errno));
             throw std::runtime_error("open shared mem fail!");
         }
         ftruncate(fd,seg_size);
@@ -93,7 +94,7 @@ public:
         }
         if (sem_close(sem) == -1) {
             std::cout<<"sem close at "<<id<<"failed"<<std::endl;
-            throw std::runtime_error("sem close fail!");
+            fprintf(stderr, "Error: %s\n", strerror(errno));
         }
         if(sem_unlink(sem_name.data()) == -1){
             std::cout<<"sem delete at "<<id<<"failed"<<std::endl;
@@ -104,10 +105,20 @@ public:
 
 class Server{
 public:
+    Server(){return;}
     Server(int seg_s, int seg_n){
-        main_mq = mq_open("/main", O_CREAT | O_EXCL | O_RDWR | O_NONBLOCK, 0666);
+        init = 1;
+        attr.mq_flags = 0;
+        attr.mq_maxmsg = 10;
+        attr.mq_msgsize = sizeof(struct message);
+        main_mq = mq_open("/main", O_CREAT | O_EXCL | O_RDWR | O_NONBLOCK, 0666, &attr);
         if(main_mq < 0){
-            std::cout<<"open msg queue fail!"<<std::endl;
+            fprintf(stderr, "Error: %s\n", strerror(errno));
+            throw std::runtime_error("open msg queue fail!");
+        }
+        resp_mq = mq_open("/main_resp", O_CREAT | O_EXCL | O_RDWR | O_NONBLOCK, 0666, &attr);
+        if(resp_mq < 0){
+            fprintf(stderr, "Error: %s\n", strerror(errno));
             throw std::runtime_error("open msg queue fail!");
         }
         msg_buffer = new struct message();
@@ -120,13 +131,22 @@ public:
         snappy_init_env(&env);
     }
     ~Server(){
+        if(!init){return;}
         if(mq_close(main_mq) < 0){
             std::cout<<"close server mq failed"<<std::endl;
-            throw std::runtime_error("close server mq failed!");
+            fprintf(stderr, "Error: %s\n", strerror(errno));
         }
         if(mq_unlink("/main") < 0){
             std::cout<<"delete server mq failed"<<std::endl;
-            throw std::runtime_error("delete server mq failed!");
+            fprintf(stderr, "Error: %s\n", strerror(errno));
+        }
+        if(mq_close(resp_mq) < 0){
+            std::cout<<"close server mq failed"<<std::endl;
+            fprintf(stderr, "Error: %s\n", strerror(errno));
+        }
+        if(mq_unlink("/main_resp") < 0){
+            std::cout<<"delete server mq failed"<<std::endl;
+            fprintf(stderr, "Error: %s\n", strerror(errno));
         }
         for(auto p:clients){
             delete p.second;
@@ -152,12 +172,16 @@ public:
     void delete_client(int);
 
     mqd_t main_mq;
+    mqd_t resp_mq;
     struct message* msg_buffer;
     int global_counter = 0;
     std::unordered_map<int, client_info*> clients;
     std::unordered_map<int, segment*> segments;
     char* output_buffer;
     struct snappy_env env;
+    struct mq_attr attr;
+    int init = 0;
+    int queue_counter = 0;
 };
 
 

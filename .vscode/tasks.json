@@ -4,12 +4,12 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "make",
-            "args": ["service"],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "command": "make clean && make service",
+        },
+        {
+            "label": "build_all",
+            "type": "shell",
+            "command": "make clean && make",
         }
     ]
 }

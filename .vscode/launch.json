@@ -2,7 +2,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ipc",
+            "name": "ipc_app",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/app",  // 替换为实际的可执行文件路径
+            "args": ["--state", "ASYNC", "--file", "bin/input/Huge.jpg"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build_all",
+            "debuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "ipc_server",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/service",  // 替换为实际的可执行文件路径
@@ -20,7 +41,7 @@
                 }
             ],
             "preLaunchTask": "build",
-            "debuggerPath": "/usr/share/gdb"
+            "debuggerPath": "/usr/bin/gdb"
         }
     ]
 }
