@@ -4,7 +4,7 @@ BIN_DIR = bin
 SNAPPY_DIR = snappy-c
 INCDIRS = -I ${SNAPPY_DIR}
 CXXFLAGS = ${INCDIRS} -ggdb -Wall -std=c++11 -w
-LDFLAGS = -L${SNAPPY_DIR} -l:libsnappyc.so.1
+LDFLAGS = -L${SNAPPY_DIR} -l:libsnappyc.so.1 -lrt -lpthread
 
 SRC_CLIENT = ${SRC_DIR}/tinylib.cpp
 SRC_SERVER = ${SRC_DIR}/service.cpp
