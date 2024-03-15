@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
     //c = new tiny_client();
     c->Compress(file, state_bool, nullptr);
     
-    std::cout<<"nonblocking after async call"<<std::endl;
+    
     gettimeofday(&endTime, NULL);
     cst = calculateCST(startTime, endTime);
     printf("Syncronized Client-Side Service Time (CST): %ld microseconds\n", cst);
