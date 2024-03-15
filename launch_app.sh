@@ -1,6 +1,6 @@
 #!/bin/bash
 
-state=ASYNC
-file=bin/input/Small.jpg
+state=SYNC
+file=bin/input/Huge.jpg
 
 ./bin/app --state "$state" --file "$file"

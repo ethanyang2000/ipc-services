@@ -51,12 +51,21 @@ for sms_size in segment_sizes:
         service_cmd = f"./bin/service --n_sms {n_sms} --sms_size {sms_size}"
         print(f"Starting service with sms_size={sms_size} and n_sms={n_sms}")
         service_process = subprocess.Popen(service_cmd, shell=True, env=env)
+        try:
+            service_process.wait(2)
+        except:
+            pass
         
         try:
             # Execute the second command
+            cmd = "rm -rf ./bin/input/Huge.jpg.compressed & rm -rf ./bin/input/new_Huge.jpg"
+            subprocess.run(cmd, shell=True, check=True)
             second_cmd = f"./bin/app --state {state} --file {file}"
             print(f"Executing: {second_cmd}")
             subprocess.run(second_cmd, shell=True, check=True)
+            cmd = "rm -rf ./bin/input/Huge.jpg.compressed & rm -rf ./bin/input/new_Huge.jpg"
+            subprocess.run(cmd, shell=True, check=True)
+            
             
         finally:
             # Ensure the service daemon is killed

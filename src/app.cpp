@@ -10,7 +10,7 @@ void sig_exit_handler(int signal) {
 }
 
 void callback_func(char* inp){
-    std::cout<<"callback called after done"<<std::endl;
+    std::cout<<"callback called after compressed"<<std::endl;
     done = true;
 }
 long calculateCST(struct timeval start, struct timeval end) {
@@ -39,33 +39,30 @@ int main(int argc, char *argv[]){
             files = argv[++i];
         }
     }
-    bool state_bool = true;
+    bool state_bool = state == "ASYNC"?true:false;
     
     struct timeval startTime, returntime, endTime;
-    gettimeofday(&startTime, NULL);
 
-    c = new tiny_client();
-    c->Compress(file, state_bool, callback_func);
-    gettimeofday(&returntime, NULL);
-    std::cout<<"nonblocking after async call"<<std::endl;
-    while(!done){}
-    gettimeofday(&endTime, NULL);
-    long returntime1 = calculateCST(startTime, returntime);
-    long cst = calculateCST(startTime, endTime);
-    printf("Asyncronized Client-Side main Thread return Time (CST): %ld microseconds\n", returntime1);
-    printf("Asyncronized Client-Side Callback Return Time (CST): %ld microseconds\n", cst);
-    //delete c;
+    if (state_bool){
+        c = new tiny_client();
+        gettimeofday(&startTime, NULL);
+        c->Compress(file, state_bool, callback_func);
+        gettimeofday(&returntime, NULL);
 
-    //sync call
-    state_bool = false;
-    gettimeofday(&startTime, NULL);
-
-    //c = new tiny_client();
-    c->Compress(file, state_bool, nullptr);
-    
-    
-    gettimeofday(&endTime, NULL);
-    cst = calculateCST(startTime, endTime);
-    printf("Syncronized Client-Side Service Time (CST): %ld microseconds\n", cst);
-    delete c;
+        while(!done){}
+        gettimeofday(&endTime, NULL);
+        long returntime1 = calculateCST(startTime, returntime);
+        long cst = calculateCST(startTime, endTime);
+        printf("Asyncronized Client-Side main Thread return Time (CST): %ld microseconds\n", returntime1);
+        printf("Asyncronized Client-Side Callback Return Time (CST): %ld microseconds\n", cst);
+        delete c;
+    }else{
+        c = new tiny_client();
+        gettimeofday(&startTime, NULL);
+        c->Compress(file, state_bool, nullptr);
+        gettimeofday(&endTime, NULL);
+        long cst = calculateCST(startTime, endTime);
+        printf("Syncronized Client-Side Service Time (CST): %ld microseconds\n", cst);
+        delete c;
+    }
 }
